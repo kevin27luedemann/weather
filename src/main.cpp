@@ -12,6 +12,7 @@
 #include "I2C.h"
 //#include "SPI.h"
 #include "ds3231.h"
+#include "HDC1080.h"
 void * operator new(size_t size)
 {
 	return malloc(size);
@@ -30,6 +31,7 @@ void operator delete[](void * ptr)
 }
 
 ds3231 rtc;
+hdc1080 sens;
 
 void output_time(char* out){
     out[0] = '0'+rtc.t.mday/10;
@@ -52,16 +54,35 @@ void output_time(char* out){
     out[16] = ':';
     out[17] = '0'+rtc.t.sec/10;
     out[18] = '0'+rtc.t.sec%10;
-    out[19] = '\n';
-    out[20] = '\r';
-    out[21] = '\0';
+    out[20] = ' ';
+
+
+    float tempera   = sens.temperature();
+    float humid     = sens.humidity();
+    if (tempera < 0.){out[21] = '-'; tempera*=-1.;}
+    else{out[21] = '+';}
+    out[22] = '0'+(uint8_t)tempera/10;
+    out[23] = '0'+(uint8_t)tempera%10;
+    out[24] = '.';
+    out[25] = '0'+(uint8_t)(tempera*10.)%10;
+    out[26] = 'C';
+    out[27] = '0'+(uint8_t)humid/10;
+    out[28] = '0'+(uint8_t)humid%10;
+    out[29] = '%'
+
+
+    out[30] = '\n';
+    out[31] = '\r';
+    out[32] = '\0';
 }
 
 ISR(USART_RX_vect){
     uint8_t temp = uart_getc();
     if (temp == 't'){
+        
         rtc.get();
-        char outpp[30];
+        sens.gettemphum();
+        char outpp[40];
         output_time(outpp);
         uart_puts(outpp);
     }
@@ -69,6 +90,7 @@ ISR(USART_RX_vect){
 
 int main(void){
     uart_init();
+    rtc.activate_sqm();
     sei();
 
     while(true){
