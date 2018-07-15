@@ -1,5 +1,6 @@
 #define F_CPU 8000000
 #define BAUD 9600
+#define GMT 2
 #include <stdlib.h>
 #include <stdio.h>
 #include <avr/io.h>
@@ -48,9 +49,11 @@ void output_time(char* out){
     out[8] = '0'+rtc.t.year_s/10;
     out[9] = '0'+rtc.t.year_s%10;
 
+    uint8_t hour = rtc.t.hour+GMT;
+
     out[10] = 'T';
-    out[11] = '0'+rtc.t.hour/10;
-    out[12] = '0'+rtc.t.hour%10;
+    out[11] = '0'+hour/10;
+    out[12] = '0'+hour%10;
     out[13] = ':';
     out[14] = '0'+rtc.t.min/10;
     out[15] = '0'+rtc.t.min%10;
@@ -75,9 +78,9 @@ void output_time(char* out){
     out[30] = '0'+(uint8_t)(humid*10)%10;
     out[31] = '%';
 
-    out[32] = '\n';
-    out[33] = '\r';
-    out[34] = '\0';
+    out[32] = '\r';
+    //out[33] = '\n';
+    out[33] = '\0';
 }
 
 ISR(USART_RX_vect){
