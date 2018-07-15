@@ -32,6 +32,9 @@ void operator delete[](void * ptr)
 
 ds3231 rtc;
 hdc1080 sens;
+Input SQM(&DDRB,&PORTB,&PINB,0,true);
+uint8_t flag;
+#define CLOCK_TICK  0
 
 void output_time(char* out){
     out[0] = '0'+rtc.t.mday/10;
@@ -54,26 +57,27 @@ void output_time(char* out){
     out[16] = ':';
     out[17] = '0'+rtc.t.sec/10;
     out[18] = '0'+rtc.t.sec%10;
-    out[20] = ' ';
-
+    out[19] = ' ';
 
     float tempera   = sens.temperature();
     float humid     = sens.humidity();
-    if (tempera < 0.){out[21] = '-'; tempera*=-1.;}
-    else{out[21] = '+';}
-    out[22] = '0'+(uint8_t)tempera/10;
-    out[23] = '0'+(uint8_t)tempera%10;
-    out[24] = '.';
-    out[25] = '0'+(uint8_t)(tempera*10.)%10;
+    if (tempera < 0.){out[20] = '-'; tempera*=-1.;}
+    else{out[20] = '+';}
+    out[21] = '0'+(uint8_t)tempera/10;
+    out[22] = '0'+(uint8_t)tempera%10;
+    out[23] = '.';
+    out[24] = '0'+(uint8_t)(tempera*10.)%10;
+    out[25] = '0'+(uint8_t)(tempera*100.)%10;
     out[26] = 'C';
     out[27] = '0'+(uint8_t)humid/10;
     out[28] = '0'+(uint8_t)humid%10;
-    out[29] = '%'
+    out[29] = '.';
+    out[30] = '0'+(uint8_t)(humid*10)%10;
+    out[31] = '%';
 
-
-    out[30] = '\n';
-    out[31] = '\r';
-    out[32] = '\0';
+    out[32] = '\n';
+    out[33] = '\r';
+    out[34] = '\0';
 }
 
 ISR(USART_RX_vect){
@@ -88,12 +92,45 @@ ISR(USART_RX_vect){
     }
 }
 
+/*
+ISR(PCINT0_vect){
+    if(SQM.ison()){
+        flag |= (1<<CLOCK_TICK);
+    }
+}
+*/
+ISR(INT0_vect){
+    flag |= (1<<CLOCK_TICK);
+}
+
 int main(void){
+    flag = 0;
+    ACSR = (1<<ACD);
     uart_init();
     rtc.activate_sqm();
+    EICRA |= (1<<ISC01);
+    EIMSK |= (1<<INT0);
     sei();
 
     while(true){
+        if(SQM.ison()){
+            rtc.get();
+            sens.gettemphum();
+            char outpp[40];
+            output_time(outpp);
+            uart_puts(outpp);
+            flag&=~(1<<CLOCK_TICK);
+            for(uint8_t i=0; i<10; i++){_delay_ms(50);}
+        }
+
+        if(flag&(1<<CLOCK_TICK)){
+            rtc.get();
+            sens.gettemphum();
+            char outpp[40];
+            output_time(outpp);
+            uart_puts(outpp);
+            flag&=~(1<<CLOCK_TICK);
+        }
 
 
     }
