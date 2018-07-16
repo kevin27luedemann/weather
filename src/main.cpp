@@ -103,19 +103,20 @@ ISR(PCINT0_vect){
 }
 */
 ISR(INT0_vect){
-    flag |= (1<<CLOCK_TICK);
+    //flag |= (1<<CLOCK_TICK);
 }
 
 int main(void){
     flag = 0;
     ACSR = (1<<ACD);
     uart_init();
-    rtc.activate_sqm();
+    rtc.deactivate_sqm();
     EICRA |= (1<<ISC01);
     EIMSK |= (1<<INT0);
     sei();
 
     while(true){
+        /*
         if(SQM.ison()){
             rtc.get();
             sens.gettemphum();
@@ -124,7 +125,7 @@ int main(void){
             uart_puts(outpp);
             flag&=~(1<<CLOCK_TICK);
             for(uint8_t i=0; i<10; i++){_delay_ms(50);}
-        }
+        }*/
 
         if(flag&(1<<CLOCK_TICK)){
             rtc.get();
