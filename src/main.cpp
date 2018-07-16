@@ -79,8 +79,8 @@ void output_time(char* out){
     out[31] = '%';
 
     out[32] = '\r';
-    //out[33] = '\n';
-    out[33] = '\0';
+    out[33] = '\n';
+    out[34] = '\0';
 }
 
 ISR(USART_RX_vect){
