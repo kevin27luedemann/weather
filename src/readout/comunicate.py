@@ -22,22 +22,23 @@ def main():
     parser.add_option("-t", "--time", dest="time", default="1.",
                       help="Specify the wait time, default 1s")
     (options, args) = parser.parse_args()
-    ser = se.Serial(options.port, 9600)
+    ser = se.Serial(options.port, 9600, timeout=5.)
     if options.store:
         client = db.InfluxDBClient(host='134.76.40.51', port=8086, database="experiment")
     cwd_measurement = os.getcwd().split("/")[3]
     while True:
         ser.write('t')
         msg = ser.readline()[:-1]
-        sys.stdout.write(msg)
-        sys.stdout.flush()
-        stamp,tem,hum = decode(msg)
-        db_output = {"measurement":cwd_measurement,
-                    "time":dt.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
-                    "fields":{  "hdc1080_tem":tem,
-                                "hdc1080_hum":hum}}
-        if options.store:
-            client.write_points([db_output])
+        if msg != "":
+            sys.stdout.write(msg+"\n")
+            sys.stdout.flush()
+            stamp,tem,hum = decode(msg)
+            db_output = {"measurement":cwd_measurement,
+                        "time":dt.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
+                        "fields":{  "hdc1080_tem":tem,
+                                    "hdc1080_hum":hum}}
+            if options.store:
+                client.write_points([db_output])
         ti.sleep(np.float(options.time))
 
 if __name__ == "__main__":
