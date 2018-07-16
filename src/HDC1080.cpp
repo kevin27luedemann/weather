@@ -25,7 +25,7 @@ void hdc1080::gettemphum(){
     i2c.twi_write(HDC1080_I2C_ADDR | I2C_WRITE);
     i2c.twi_write(HDC1080_TEMP);
     i2c.twi_stop();
-    _delay_ms(20);
+    _delay_ms(15);
 
     i2c.twi_start();
     i2c.twi_write(HDC1080_I2C_ADDR | I2C_READ);

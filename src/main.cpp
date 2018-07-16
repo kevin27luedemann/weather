@@ -86,9 +86,8 @@ void output_time(char* out){
 ISR(USART_RX_vect){
     uint8_t temp = uart_getc();
     if (temp == 't'){
-        
         rtc.get();
-        sens.gettemphum();
+        //sens.gettemphum();
         char outpp[40];
         output_time(outpp);
         uart_puts(outpp);
