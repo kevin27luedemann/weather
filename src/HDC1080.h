@@ -27,8 +27,9 @@ public:
     hdc1080();
     ~hdc1080();
     int16_t rawtemp;
-    int16_t rawhum;
+    uint16_t rawhum;
     void gettemphum();
+    void reset();
     float temperature();
     float humidity();
 

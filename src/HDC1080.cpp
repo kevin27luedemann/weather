@@ -15,6 +15,7 @@ hdc1080::hdc1080(){
     i2c.twi_write(HDC1080_I2C_ADDR | I2C_WRITE);
     i2c.twi_write(HDC1080_CONFIG);
     i2c.twi_write(0x10);
+    //i2c.twi_write(0x15);
     i2c.twi_stop();
 }
 
@@ -25,7 +26,7 @@ void hdc1080::gettemphum(){
     i2c.twi_write(HDC1080_I2C_ADDR | I2C_WRITE);
     i2c.twi_write(HDC1080_TEMP);
     i2c.twi_stop();
-    _delay_ms(15);
+    _delay_ms(20);
 
     i2c.twi_start();
     i2c.twi_write(HDC1080_I2C_ADDR | I2C_READ);
@@ -34,6 +35,15 @@ void hdc1080::gettemphum(){
     rawtemp = rawtemp   << 8 | i2c.twi_read(1);
     rawhum  = rawhum    << 8 | i2c.twi_read(1);
     rawhum  = rawhum    << 8 | i2c.twi_read(0);
+    i2c.twi_stop();
+}
+
+void hdc1080::reset(){
+    i2c.twi_start();
+    i2c.twi_write(HDC1080_I2C_ADDR | I2C_WRITE);
+    i2c.twi_write(HDC1080_CONFIG);
+    i2c.twi_write(0x90);
+    //i2c.twi_write(0x15);
     i2c.twi_stop();
 }
 
